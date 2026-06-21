@@ -18,45 +18,21 @@ struct Generate2App: App {
     }
 }
 
-/// Standalone host for Generate2. Owns the NavigationStack the way the real
-/// parent app will, bridges Generate2's `onTopupNeeded` async closure to a
-/// dummy sheet, and provides a dummy "team derive view" so the full Normal →
-/// Team → Derive flow is exercisable without the team's actual package.
+/// Standalone host for Generate2. Bridges Generate2's `onTopupNeeded` async
+/// closure to a dummy sheet.
 private struct AppRoot: View {
     @State private var bridge = TopupBridge()
     @State private var songBridge = SongBridge()
-    @State private var path: [Route] = []
 
     var body: some View {
-        NavigationStack(path: $path) {
+        NavigationStack {
             ContentView(
                 onTopupNeeded: { await bridge.request() },
-                onImageTapped: { imagePath in
-                    path.append(.teamDerive(imagePath: imagePath))
-                },
-                onUploadSong: { await songBridge.request() }
+                onUploadSong: { await songBridge.request() },
+                menuItemName1: "Editorial",
+                menuItemIcon1: "rectangle.stack",
+                onMenuItemTapped1: {}
             )
-            .navigationDestination(for: Route.self) { route in
-                switch route {
-                case .teamDerive(let imagePath):
-                    DummyTeamDeriveView(imagePath: imagePath) { tweak in
-                        // Submit: pop the team view, push Generate2 in derive mode.
-                        let filename = URL(fileURLWithPath: imagePath).lastPathComponent
-                        path.removeLast()
-                        path.append(.generate2Derive(filename: filename, tweak: tweak))
-                    }
-                case .generate2Derive(let filename, let tweak):
-                    ContentView(
-                        onTopupNeeded: { await bridge.request() },
-                        onImageTapped: { imagePath in
-                            path.append(.teamDerive(imagePath: imagePath))
-                        },
-                        onUploadSong: { await songBridge.request() },
-                        filename: filename,
-                        tweak: tweak
-                    )
-                }
-            }
         }
         .sheet(isPresented: $bridge.showSheet, onDismiss: bridge.resolveAsFailureIfPending) {
             DummyParentTopupSheet(
@@ -143,51 +119,6 @@ private final class SongBridge {
         guard let cont = continuation else { return }
         continuation = nil
         cont.resume()
-    }
-}
-
-/// Parent-side routing vocabulary. Lives entirely in the parent — Generate2
-/// has no awareness of these cases.
-private enum Route: Hashable {
-    case teamDerive(imagePath: String)
-    case generate2Derive(filename: String, tweak: String)
-}
-
-/// Pretend version of the team's "Change it" screen. Real parent app pushes
-/// the team's package view here instead.
-private struct DummyTeamDeriveView: View {
-    let imagePath: String
-    let onSubmit: (String) -> Void
-    @State private var tweak: String = ""
-    @FocusState private var focused: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Source path: \(imagePath)")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-            TextField("Tell me what to change", text: $tweak, axis: .vertical)
-                .focused($focused)
-                .font(.body)
-                .lineLimit(3...8)
-                .padding(16)
-                .background(.gray.opacity(0.15), in: .rect(cornerRadius: 16))
-                .padding(.horizontal, 16)
-            Spacer()
-        }
-        .navigationTitle("Team derive view (dummy)")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear { focused = true }
-        .safeAreaInset(edge: .bottom) {
-            Button("Submit (dummy)") {
-                onSubmit(tweak.trimmingCharacters(in: .whitespacesAndNewlines))
-            }
-            .buttonStyle(.borderedProminent)
-            .disabled(tweak.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            .padding()
-        }
     }
 }
 

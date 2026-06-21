@@ -116,26 +116,23 @@ struct FemiImageCell: View {
             .opacity(eligible ? 1 : 0.3)
             .contentShape(.rect)
             .onTapGesture {
-                if selecting {
-                    guard eligible else { return }
-                    guard viewModel.likeStore.isLiked(image) else { return }
-                    withAnimation(.spring(duration: 0.25)) {
-                        if let i = viewModel.selectedImageIds.firstIndex(of: image) {
-                            viewModel.selectedImageIds.remove(at: i)
-                        } else if viewModel.selectedImageIds.count < 3 {
-                            viewModel.selectedImageIds.append(image)
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        }
+                guard selecting else { return }
+                guard eligible else { return }
+                guard viewModel.likeStore.isLiked(image) else { return }
+                withAnimation(.spring(duration: 0.25)) {
+                    if let i = viewModel.selectedImageIds.firstIndex(of: image) {
+                        viewModel.selectedImageIds.remove(at: i)
+                    } else if viewModel.selectedImageIds.count < 3 {
+                        viewModel.selectedImageIds.append(image)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     }
-                } else {
-                    viewModel.onImageTapped?(ProjectService.getUrl(for: image).path)
                 }
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel(
                 selecting
                     ? (selected ? "Picture, selected" : "Picture, double tap to select")
-                    : "Picture, double tap to remake"
+                    : "Picture"
             )
             .accessibilityValue(liked ? "Saved" : "")
     }
