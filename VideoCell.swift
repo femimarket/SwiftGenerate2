@@ -63,7 +63,7 @@ struct VideoCell: View {
             .overlay(alignment: .topTrailing) {
                 if !selecting {
                     femiHeartButton(isLiked: viewModel.likeStore.isLiked(video.id.uuidString)) {
-                        viewModel.toggleLikeVideo(video)
+                        viewModel.likeStore.toggle(video.id.uuidString)
                     }
                 }
             }

@@ -75,7 +75,7 @@ struct PendingImageCell: View {
             .contentShape(.rect)
             .onTapGesture {
                 if pending.state == .failed {
-                    viewModel.dismissFemiPendingImage(pending.id)
+                    withAnimation { viewModel.pendingImages.removeAll { $0.id == pending.id } }
                 }
             }
     }
@@ -122,7 +122,7 @@ struct PendingGenerationCell: View {
             .contentShape(.rect)
             .onTapGesture {
                 if pending.state == .failed {
-                    viewModel.dismissFemiPendingGeneration(pending.id)
+                    withAnimation { viewModel.pendingGenerations.removeAll { $0.id == pending.id } }
                 }
             }
     }
@@ -170,7 +170,7 @@ struct PendingVideoCell: View {
             .contentShape(.rect)
             .onTapGesture {
                 if pending.state == .failed {
-                    viewModel.dismissFemiPendingVideo(pending.id)
+                    withAnimation { viewModel.pendingVideos.removeAll { $0.id == pending.id } }
                 }
             }
     }

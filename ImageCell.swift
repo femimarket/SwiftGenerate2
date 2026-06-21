@@ -108,7 +108,8 @@ struct FemiImageCell: View {
                     }
                 } else {
                     femiHeartButton(isLiked: liked) {
-                        viewModel.toggleLikeImage(image)
+                        viewModel.likeStore.toggle(image)
+                        ProjectService.like(image, viewModel.likeStore.isLiked(image))
                     }
                 }
             }
@@ -117,11 +118,17 @@ struct FemiImageCell: View {
             .onTapGesture {
                 if selecting {
                     guard eligible else { return }
+                    guard viewModel.likeStore.isLiked(image) else { return }
                     withAnimation(.spring(duration: 0.25)) {
-                        viewModel.toggleSelection(image)
+                        if let i = viewModel.selectedImageIds.firstIndex(of: image) {
+                            viewModel.selectedImageIds.remove(at: i)
+                        } else if viewModel.selectedImageIds.count < 3 {
+                            viewModel.selectedImageIds.append(image)
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        }
                     }
                 } else {
-                    viewModel.openDerive(image)
+                    viewModel.onImageTapped?(ProjectService.getUrl(for: image).path)
                 }
             }
             .accessibilityElement(children: .combine)
