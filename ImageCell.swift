@@ -129,6 +129,7 @@ struct FemiImageCell: View {
                 }
             }
             .accessibilityElement(children: .combine)
+            .draggable(DraggedImage(filename: image))
             .accessibilityLabel(
                 selecting
                     ? (selected ? "Picture, selected" : "Picture, double tap to select")
