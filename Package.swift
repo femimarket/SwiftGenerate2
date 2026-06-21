@@ -12,7 +12,8 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/femimarket/swiftapi", from: "0.1.0"),
+        .package(url: "https://github.com/femimarket/swiftapi", branch: "main"),
+        .package(url: "https://github.com/femimarket/swift-project-service", branch: "main"),
         .package(url: "https://github.com/atelier-socle/swift-audio-marker", from: "0.1.1"),
     ],
     targets: [
@@ -20,6 +21,7 @@ let package = Package(
             name: "Generate2",
             dependencies: [
                 .product(name: "Api", package: "swiftapi"),
+                .product(name: "ProjectService", package: "swift-project-service"),
                 .product(name: "AudioMarker", package: "swift-audio-marker"),
             ],
             path: ".",
